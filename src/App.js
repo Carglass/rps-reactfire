@@ -17,7 +17,15 @@ class App extends Component {
 
     loginListeningAction(loggedUser){
         if (loggedUser) {
-            this.setState({isLogged: true});
+            this.setState({
+                isLogged: true, 
+                user:{
+                    name: loggedUser.displayName,
+                    uid: loggedUser.uid, 
+                    // TODO: find how to put the wins in user directly, rather than in the database, where it is not so safe? or is it once we put the appropriate rules? 
+                    // Basically, if I can read it myself, not a good sign.
+                }
+            });
         } else {
             this.setState({isLogged: false});
         }
@@ -30,7 +38,7 @@ class App extends Component {
     render() {
         if (this.state.isLogged === true) {
             return (
-                <Main />
+                <Main user={this.state.user}/>
             );
         } else if (this.state.isLogged === false) {
             return (
@@ -97,9 +105,7 @@ class Login extends Component {
             var errorCode = error.code;
             var errorMessage = error.message;
             // ...
-          }).then(function(){
-              console.log('authentication succesful');
-          });
+          })
     }
 
     render(){
@@ -128,12 +134,36 @@ class Main extends Component {
         this.state = {
             keepalive: true,
         }
+        this.submitLogout = this.submitLogout.bind(this);
+    }
+
+    submitLogout(){
+        fire.auth().signOut();
     }
 
     render() {
         return (
-            <div>Main App</div>
+            <div>
+                <div>{this.props.user.name} is connected</div>
+                <button onClick={this.submitLogout}>Logout</button>
+                <Chat />
+            </div>
         );
+    }
+}
+
+class Chat extends Component{
+    constructor(props){
+        super(props);
+        this.state = {
+            messages: [],
+        }
+    }
+
+    render(){
+        return (
+            <div>Chat</div>
+        )
     }
 }
 
