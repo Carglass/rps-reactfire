@@ -6,20 +6,84 @@ class App extends Component {
         super(props);
         this.state = {
             isLogged: false,
-            gameState: '',
         }
+        this.handleLogin = this.handleLogin.bind(this);
     }
+
+  handleLogin(){
+    if (this.state.isLogged === false){
+      this.setState({isLogged: true});
+    }
+  }
+  
   render() {
+    if (this.state.isLogged === true){
+      return (
+        <Main />
+      );
+    } else if (this.state.isLogged === false){
+      return (
+        <LoginSignUp />
+      )
+    }
+  }
+}
+
+class LoginSignUp extends Component {
+  constructor(props){
+    super(props);
+    this.state = {
+      isNewUser: false,
+    }
+    this.handleNewUserState = this.handleNewUserState.bind(this);
+  }
+
+  handleNewUserState(){
+    if (this.state.isNewUser === false){
+      this.setState({isNewUser: true});
+    } else {
+      this.setState({isNewUser: false});
+    }
+  }
+
+  render(){
+    if (this.state.isNewUser === false){
+      return(
+        <Login toSignUp={this.handleNewUserState}/>
+      )
+    } else {
+      return(
+        <SignUp />
+      )
+    }
+    
+  }
+}
+
+function Login(props){
+  return (
+    <button onClick={props.toSignUp}/>
+  );
+}
+
+function SignUp(props){
+  return(
+    <div>Itworked</div>
+  );
+}
+
+class Main extends Component {
+  constructor(props){
+    super(props);
+    this.state = {
+      keepalive: true,
+    }
+  }
+
+  render(){
     return (
-      <div className="App">
-        <header className="App-header">
-          <h1 className="App-title">Welcome to React</h1>
-        </header>
-        <p className="App-intro">
-          To get started, edit <code>src/App.js</code> and save to reload.
-        </p>
-      </div>
-    );
+      <div>Main App</div>
+    ); 
   }
 }
 
