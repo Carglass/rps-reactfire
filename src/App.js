@@ -231,9 +231,10 @@ class Matchmaking extends Component{
         this.handleNewSessionSubmit = this.handleNewSessionSubmit.bind(this);
         this.listenToNewSessions = this.listenToNewSessions.bind(this);
         this.newSessionsListeningAction = this.newSessionsListeningAction.bind(this);
-        this.listenToChangedSessions = this.listenToChangedSessions.bind(this);
-        this.listenToDeletedSessions = this.listenToDeletedSessions.bind(this);
+        this.listenToRemovedSessions = this.listenToRemovedSessions.bind(this);
+        this.removedSessionsListeningAction = this.removedSessionsListeningAction.bind(this);
         this.listenToNewSessions();
+        this.listenToRemovedSessions();
     }
 
     handleNewSessionSubmit(){
@@ -256,7 +257,7 @@ class Matchmaking extends Component{
             creator: snapshot.val().creator,
             state: snapshot.val().state,
             }
-            sessionsCopy.push(snapshot.val())
+            sessionsCopy.push(addedSession);
             this.setState({sessions: sessionsCopy});
         }
     }
@@ -266,12 +267,19 @@ class Matchmaking extends Component{
     }
 
     //TODO: Remember to unmount this component when in game -> will kill listeners? 
-    listenToChangedSessions(){
-        console.log('listening');
+
+    removedSessionsListeningAction(snapshot){
+        let sessionsCopy = this.state.sessions.slice();
+        for (let sessionIndex in sessionsCopy){
+            if (sessionsCopy[sessionIndex].uid === snapshot.key){
+                sessionsCopy.splice(sessionIndex,1);
+            }
+        }
+        this.setState({sessions: sessionsCopy});
     }
 
-    listenToDeletedSessions(){
-        console.log('listening');
+    listenToRemovedSessions(){
+        database.ref('sessions').orderByChild('state').equalTo(SESSION_STATE.OPEN).on('child_removed', this.removedSessionsListeningAction);
     }
 
     render(){
