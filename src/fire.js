@@ -1,4 +1,5 @@
 import firebase from 'firebase'
+var keys = require('./keys')
 var config = {
     apiKey: "AIzaSyCA3uihCBSy6d_GMv747yoigN6L-HeE_3Y",
     authDomain: "rockpaperscisors-5155a.firebaseapp.com",

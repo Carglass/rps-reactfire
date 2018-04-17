@@ -160,10 +160,38 @@ class Chat extends Component{
         }
     }
 
+    listenToMessages(){
+        console.log('listening to messages');
+    }
+
     render(){
         return (
-            <div>Chat</div>
+            <div>Chat
+                <Messages messages={this.state.messages}/>
+                <input type='text'/>
+            </div>
         )
+    }
+}
+
+class Messages extends Component{
+    constructor(props){
+        super(props);
+    }
+
+    renderMessage(userName,message){
+        return(
+            <div>
+                <div>{userName}</div>
+                <div>{message}</div>
+            </div>
+        );
+    }
+
+    render(){
+        return(
+            <div>Messages</div>
+        );
     }
 }
 
