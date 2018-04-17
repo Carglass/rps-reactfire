@@ -148,9 +148,104 @@ class Main extends Component {
                 <div>{this.props.user.name} is connected</div>
                 <button onClick={this.submitLogout}>Logout</button>
                 <Chat user={this.props.user}/>
+                <Game user={this.props.user}/>
             </div>
         );
     }
+}
+
+var GAME_STATE = {
+    MATCHMAKING: 1,
+    WAITING_JOINER: 2,
+    GAME_START: 3,
+    WAITING_OPPONENT: 4,
+    GAME_RESULTS: 5,
+}
+
+class Game extends Component{
+    constructor(props){
+        super(props);
+        this.state = {
+            gameState: GAME_STATE.MATCHMAKING,
+            gameOpponent: '',
+            gamePlayer: '',
+            session: '',
+        }
+    }
+
+    render(){
+        if (this.state.gameState === 1){
+            return(
+                <Matchmaking user={this.props.user}/>
+            );
+        } else if (this.state.gameState === 2){
+            return(
+                <div>WAITING JOINER
+
+                </div>
+            );
+        } else if (this.state.gameState === 3){
+            return(
+                <div>GAME START
+
+                </div>
+            ); 
+        } else if (this.state.gameState === 4){
+            return(
+                <div>WAITING OPPONENT 
+
+                </div>
+            );  
+        } else if (this.state.gameState === 5){
+            return(
+                <div>GAME RESULTS
+
+                </div>
+            ); 
+        }
+    }
+}
+
+class Matchmaking extends Component{
+    constructor(props){
+        super(props);
+        this.state = {
+            sessions: [],
+        }
+        this.listenToNewSessions = this.listenToNewSessions.bind(this);
+        this.listenToChangedSessions = this.listenToChangedSessions.bind(this);
+        this.listenToDeletedSessions = this.listenToDeletedSessions.bind(this);
+    }
+
+    listenToNewSessions(){
+        console.log('listening');
+    }
+
+    //TODO: Remember to unmount this component when in game -> will kill listeners? 
+    listenToChangedSessions(){
+        console.log('listening');
+    }
+
+    listenToDeletedSessions(){
+        console.log('listening');
+    }
+
+    render(){
+        return(
+            <div>
+                <Sessions sessions={this.state.sessions}/>
+                <button>Create Session</button>
+            </div>
+        );
+    }
+}
+
+function Sessions(props){
+    return(
+        <div>
+            Sessions
+        </div>
+    );
 }
 
 class Chat extends Component{
@@ -231,6 +326,7 @@ class Messages extends Component{
     constructor(props){
         super(props);
     }
+    //TODO: Convert into functional component
 
     renderMessage(userName,messageText,uid){
         return(
