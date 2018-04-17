@@ -21,7 +21,7 @@ class App extends Component {
                 isLogged: true, 
                 user:{
                     name: loggedUser.displayName,
-                    uid: loggedUser.uid, 
+                    uid: loggedUser.uid,
                     // TODO: find how to put the wins in user directly, rather than in the database, where it is not so safe? or is it once we put the appropriate rules? 
                     // Basically, if I can read it myself, not a good sign.
                 }
