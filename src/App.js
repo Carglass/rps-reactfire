@@ -49,6 +49,10 @@ class App extends Component {
     }
 }
 
+///////////////////////////
+// Login & Sign up Mngmt //
+///////////////////////////
+
 class LoginSignUp extends Component {
     constructor(props) {
         super(props);
@@ -154,12 +158,22 @@ class Main extends Component {
     }
 }
 
+////////////////
+// Game Mngmt //
+////////////////
+
 var GAME_STATE = {
     MATCHMAKING: 1,
     WAITING_JOINER: 2,
     GAME_START: 3,
     WAITING_OPPONENT: 4,
     GAME_RESULTS: 5,
+}
+
+var SESSION_STATE = {
+    OPEN: 1,
+    CLOSED: 2,
+    REALIZED: 3,
 }
 
 class Game extends Component{
@@ -206,19 +220,49 @@ class Game extends Component{
     }
 }
 
+
+
 class Matchmaking extends Component{
     constructor(props){
         super(props);
         this.state = {
             sessions: [],
         }
+        this.handleNewSessionSubmit = this.handleNewSessionSubmit.bind(this);
         this.listenToNewSessions = this.listenToNewSessions.bind(this);
+        this.newSessionsListeningAction = this.newSessionsListeningAction.bind(this);
         this.listenToChangedSessions = this.listenToChangedSessions.bind(this);
         this.listenToDeletedSessions = this.listenToDeletedSessions.bind(this);
+        this.listenToNewSessions();
+    }
+
+    handleNewSessionSubmit(){
+        let session = {
+            'creator': {
+                'displayName': this.props.user.name,
+                'uid': this.props.user.uid,
+                'choice': '',
+            },
+            state: SESSION_STATE.OPEN,
+        }
+        database.ref('sessions').push(session);
+    }
+
+    newSessionsListeningAction(snapshot){
+        if (snapshot.val().creator.uid !== this.props.user.uid){
+            let sessionsCopy = this.state.sessions.slice();
+            let addedSession = {
+            uid: snapshot.key,
+            creator: snapshot.val().creator,
+            state: snapshot.val().state,
+            }
+            sessionsCopy.push(snapshot.val())
+            this.setState({sessions: sessionsCopy});
+        }
     }
 
     listenToNewSessions(){
-        console.log('listening');
+        database.ref('sessions').orderByChild('state').equalTo(SESSION_STATE.OPEN).on('child_added', this.newSessionsListeningAction);
     }
 
     //TODO: Remember to unmount this component when in game -> will kill listeners? 
@@ -234,19 +278,31 @@ class Matchmaking extends Component{
         return(
             <div>
                 <Sessions sessions={this.state.sessions}/>
-                <button>Create Session</button>
+                <button onClick={this.handleNewSessionSubmit}>Create Session</button>
             </div>
         );
     }
 }
 
+function Session(props){
+    return(
+        <div>
+            {props.creator.displayName}
+        </div>
+    )
+}
+
 function Sessions(props){
     return(
         <div>
-            Sessions
+            {props.sessions.map((sessionData)=>Session(sessionData))}
         </div>
     );
 }
+
+////////////////
+// Chat Mngmt //
+////////////////
 
 class Chat extends Component{
     constructor(props){
