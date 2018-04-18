@@ -233,8 +233,20 @@ class Matchmaking extends Component{
         this.newSessionsListeningAction = this.newSessionsListeningAction.bind(this);
         this.listenToRemovedSessions = this.listenToRemovedSessions.bind(this);
         this.removedSessionsListeningAction = this.removedSessionsListeningAction.bind(this);
+        this.handleJoinSession = this.handleJoinSession.bind(this);
         this.listenToNewSessions();
         this.listenToRemovedSessions();
+    }
+
+    handleJoinSession(uid){
+        database.ref('sessions/' + uid).update({
+            'joiner': {
+                'displayName': this.props.user.name,
+                'uid': this.props.user.uid,
+                'choice': '',
+            },
+            'state': SESSION_STATE.CLOSED,
+        })
     }
 
     handleNewSessionSubmit(){
@@ -285,7 +297,7 @@ class Matchmaking extends Component{
     render(){
         return(
             <div>
-                <Sessions sessions={this.state.sessions}/>
+                <Sessions sessions={this.state.sessions} joinSession={this.handleJoinSession}/>
                 <button onClick={this.handleNewSessionSubmit}>Create Session</button>
             </div>
         );
@@ -294,8 +306,9 @@ class Matchmaking extends Component{
 
 function Session(props){
     return(
-        <div>
-            {props.creator.displayName}
+        <div key={props.session.uid}>
+            <div>{props.session.creator.displayName}'s Game</div>
+            <button onClick={()=>props.joinSession(props.session.uid)}>Join Session</button>
         </div>
     )
 }
@@ -303,7 +316,7 @@ function Session(props){
 function Sessions(props){
     return(
         <div>
-            {props.sessions.map((sessionData)=>Session(sessionData))}
+            {props.sessions.map((sessionData)=>Session({session: sessionData, joinSession: props.joinSession}))}
         </div>
     );
 }
