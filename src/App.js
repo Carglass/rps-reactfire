@@ -185,15 +185,38 @@ class Game extends Component{
             gamePlayer: '',
             sessionUid: '',
         }
+        this.handleChoice = this.handleChoice.bind(this);
         this.closedSessionsListeningAction = this.closedSessionsListeningAction.bind(this);
         this.listenToClosedSessions = this.listenToClosedSessions.bind(this);
         this.listenToClosedSessions();
     }
 
+    handleChoice(choice){
+        if (this.state.gamePlayer.role === 'creator'){
+            database.ref('sessions/' + this.state.sessionUid).update({'creator/choice':choice});
+        } else if (this.state.gamePlayer.role === 'joiner'){
+            database.ref('sessions/' + this.state.sessionUid).update({'joiner/choice':choice});
+        }
+        
+    }
+
+    //TODO: will need to add the handler to answer the promise when creating a session and going to Waiting for other player 
+    // or maybe better on database.ref('sessions').orderByChild('state').equalTo(SESSION_STATE.OPEN).orderByChild('creator/uid').equalTo(this.props.user.uid).on('child_added',()=>faire la session)
+
     closedSessionsListeningAction(snapshot){
         if (this.props.user.uid === snapshot.val().creator.uid){
-            let player = snapshot.val().creator;
-            let opponent = snapshot.val().joiner;
+            let player = {
+                choice: snapshot.val().creator.choice,
+                displayName: snapshot.val().creator.displayName,
+                uid: snapshot.val().creator.uid,
+                role: 'creator',
+            };
+            let opponent = {
+                choice: snapshot.val().joiner.choice,
+                displayName: snapshot.val().joiner.displayName,
+                uid: snapshot.val().joiner.uid,
+                role: 'joiner',
+            };
             let toBeSessionUid = snapshot.key;
             this.setState({
                 gameState: GAME_STATE.GAME_START,
@@ -202,8 +225,18 @@ class Game extends Component{
                 sessionUid: toBeSessionUid,
             })
         } else if (this.props.user.uid === snapshot.val().joiner.uid){
-            let player = snapshot.val().joiner;
-            let opponent = snapshot.val().creator;
+            let opponent = {
+                choice: snapshot.val().creator.choice,
+                displayName: snapshot.val().creator.displayName,
+                uid: snapshot.val().creator.uid,
+                role: 'creator',
+            };
+            let player = {
+                choice: snapshot.val().joiner.choice,
+                displayName: snapshot.val().joiner.displayName,
+                uid: snapshot.val().joiner.uid,
+                role: 'joiner',
+            };
             let toBeSessionUid = snapshot.key;
             this.setState({
                 gameState: GAME_STATE.GAME_START,
@@ -231,8 +264,10 @@ class Game extends Component{
             );
         } else if (this.state.gameState === 3){
             return(
-                <div>GAME START
-
+                <div>
+                    <div id='rock' onClick={()=>this.handleChoice('rock')}>Rock</div>
+                    <div id='paper' onClick={()=>this.handleChoice('paper')}>Paper</div>
+                    <div id='scissors' onClick={()=>this.handleChoice('scissors')}>Scissors</div>
                 </div>
             ); 
         } else if (this.state.gameState === 4){
