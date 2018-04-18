@@ -183,8 +183,39 @@ class Game extends Component{
             gameState: GAME_STATE.MATCHMAKING,
             gameOpponent: '',
             gamePlayer: '',
-            session: '',
+            sessionUid: '',
         }
+        this.closedSessionsListeningAction = this.closedSessionsListeningAction.bind(this);
+        this.listenToClosedSessions = this.listenToClosedSessions.bind(this);
+        this.listenToClosedSessions();
+    }
+
+    closedSessionsListeningAction(snapshot){
+        if (this.props.user.uid === snapshot.val().creator.uid){
+            let player = snapshot.val().creator;
+            let opponent = snapshot.val().joiner;
+            let toBeSessionUid = snapshot.key;
+            this.setState({
+                gameState: GAME_STATE.GAME_START,
+                gameOpponent: opponent,
+                gamePlayer: player,
+                sessionUid: toBeSessionUid,
+            })
+        } else if (this.props.user.uid === snapshot.val().joiner.uid){
+            let player = snapshot.val().joiner;
+            let opponent = snapshot.val().creator;
+            let toBeSessionUid = snapshot.key;
+            this.setState({
+                gameState: GAME_STATE.GAME_START,
+                gameOpponent: opponent,
+                gamePlayer: player,
+                sessionUid: toBeSessionUid,
+            })
+        }
+    }
+
+    listenToClosedSessions(){
+        database.ref('sessions').orderByChild('state').equalTo(SESSION_STATE.CLOSED).on('child_added', this.closedSessionsListeningAction);
     }
 
     render(){
