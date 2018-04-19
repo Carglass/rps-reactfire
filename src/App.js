@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import './App.css';
 import fire from './fire';
+import { Map, List, fromJS } from 'immutable';
 
 var database = fire.database();
 
@@ -185,10 +186,70 @@ class Game extends Component{
             gamePlayer: '',
             sessionUid: '',
         }
+        this.opponentPromiseResolver = this.opponentPromiseResolver.bind(this);
+        this.opponentPromiseThenAction = this.opponentPromiseThenAction.bind(this);
+        this.playerPromiseResolver = this.playerPromiseResolver.bind(this);
+        this.playerPromiseThenAction = this.playerPromiseThenAction.bind(this);
+        this.listenToChoices = this.listenToChoices.bind(this);
         this.handleChoice = this.handleChoice.bind(this);
         this.closedSessionsListeningAction = this.closedSessionsListeningAction.bind(this);
         this.listenToClosedSessions = this.listenToClosedSessions.bind(this);
         this.listenToClosedSessions();
+    }
+
+    opponentPromiseResolver(resolve,reject){
+        if (this.state.gamePlayer.role === 'creator'){
+            database.ref('sessions/' + this.state.sessionUid + '/joiner/choice').on('value',function(snapshot){
+                if (snapshot.val() !== ''){
+                    console.log(snapshot.val());
+                    resolve(snapshot.val());
+                }
+            });
+        } else if (this.state.gamePlayer.role === 'joiner'){
+            database.ref('sessions/' + this.state.sessionUid + '/creator/choice').on('value',function(snapshot){
+                if (snapshot.val() !== ''){
+                    console.log(snapshot.val());
+                    resolve(snapshot.val());
+                }
+            })
+        }
+    }
+
+    opponentPromiseThenAction(value){
+        const opponentMap = fromJS(this.state.gameOpponent);
+        this.setState({gameOpponent: opponentMap.set('choice',value).toJS()});
+        console.log(this.state.gameOpponent);
+    }
+
+    playerPromiseResolver(resolve,reject){
+        if (this.state.gamePlayer.role === 'creator'){
+            database.ref('sessions/' + this.state.sessionUid + '/creator/choice').on('value',function(snapshot){
+                if (snapshot.val() !== ''){
+                    console.log(snapshot.val());
+                    resolve(snapshot.val());
+                }
+            });
+        } else if (this.state.gamePlayer.role === 'joiner'){
+            database.ref('sessions/' + this.state.sessionUid + '/joiner/choice').on('value',function(snapshot){
+                if (snapshot.val() !== ''){
+                    console.log(snapshot.val());
+                    resolve(snapshot.val());
+                }
+            });
+        }
+    }
+
+    playerPromiseThenAction(value){
+        const playerMap = fromJS(this.state.gamePlayer);
+        this.setState({gamePlayer: playerMap.set('choice',value).toJS()});
+        console.log(this.state.gamePlayer);
+    }
+
+    listenToChoices(){
+        var opponentChoice = new Promise(this.opponentPromiseResolver);
+        opponentChoice.then(this.opponentPromiseThenAction);
+        var playerChoice = new Promise(this.playerPromiseResolver);
+        playerChoice.then(this.playerPromiseThenAction);
     }
 
     handleChoice(choice){
@@ -196,8 +257,7 @@ class Game extends Component{
             database.ref('sessions/' + this.state.sessionUid).update({'creator/choice':choice});
         } else if (this.state.gamePlayer.role === 'joiner'){
             database.ref('sessions/' + this.state.sessionUid).update({'joiner/choice':choice});
-        }
-        
+        }  
     }
 
     //TODO: will need to add the handler to answer the promise when creating a session and going to Waiting for other player 
@@ -245,6 +305,7 @@ class Game extends Component{
                 sessionUid: toBeSessionUid,
             })
         }
+        this.listenToChoices();
     }
 
     listenToClosedSessions(){
