@@ -1,0 +1,22 @@
+.message{
+    display: flex;
+    height: 40px;
+    margin-top: 10px;
+}
+
+.message-user{
+    background-color: lightgrey;
+    width:40px;
+    text-align: center;
+    border-radius: 20px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.message-content{
+    background-color: lightgreen;
+    width: 100%;
+    margin-left: 10px;
+    padding: 5px;
+    border-radius: 5px;
+}
